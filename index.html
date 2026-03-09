@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<meta charset="UTF-8">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+<style>
+
+body{
+background:#0f172a;
+color:white;
+font-family:Arial;
+text-align:center;
+}
+
+.container{
+padding:20px;
+}
+
+.button{
+background:#22c55e;
+padding:15px;
+border-radius:10px;
+margin-top:20px;
+font-size:18px;
+}
+
+.chart{
+height:200px;
+background:#1e293b;
+margin-top:20px;
+border-radius:10px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h2>AI Trading Scanner</h2>
+
+<div class="chart">
+📈 Market Chart
+</div>
+
+<div id="signal"></div>
+
+<div class="button" onclick="generateSignal()">
+Получить сигнал
+</div>
+
+</div>
+
+<script>
+
+function generateSignal(){
+
+let pairs=["EUR/USD","BTC/USDT","USD/JPY","GBP/USD"]
+
+let directions=["BUY 🟢","SELL 🔴"]
+
+let pair=pairs[Math.floor(Math.random()*pairs.length)]
+let direction=directions[Math.floor(Math.random()*directions.length)]
+
+let win=Math.floor(Math.random()*10)+88
+
+document.getElementById("signal").innerHTML=
+`
+<h3>AI SIGNAL</h3>
+<p>${pair}</p>
+<p>${direction}</p>
+<p>Winrate: ${win}%</p>
+`
+
+}
+
+</script>
+
+</body>
+</html>
