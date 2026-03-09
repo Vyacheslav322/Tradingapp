@@ -26,11 +26,18 @@ margin-top:20px;
 font-size:18px;
 }
 
+.lock{
+background:#ef4444;
+}
+
 .chart{
 height:200px;
 background:#1e293b;
 margin-top:20px;
 border-radius:10px;
+display:flex;
+align-items:center;
+justify-content:center;
 }
 
 </style>
@@ -49,31 +56,60 @@ border-radius:10px;
 
 <div id="signal"></div>
 
-<div class="button" onclick="generateSignal()">
-Получить сигнал
+<div id="buttons">
+
+<div class="button lock" onclick="openBroker()">
+🔒 Разблокировать сигналы
+</div>
+
 </div>
 
 </div>
 
 <script>
 
-function generateSignal(){
+let unlocked=false
 
 let pairs=["EUR/USD","BTC/USDT","USD/JPY","GBP/USD"]
 
-let directions=["BUY 🟢","SELL 🔴"]
+let times=["30 секунд","1 минута","3 минуты","5 минут"]
+
+function openBroker(){
+
+window.open("ТВОЯ_РЕФЕРАЛЬНАЯ_ССЫЛКА")
+
+document.getElementById("buttons").innerHTML=
+`
+<div class="button" onclick="generateSignal()">
+📊 Получить сигнал
+</div>
+`
+
+unlocked=true
+
+}
+
+function generateSignal(){
 
 let pair=pairs[Math.floor(Math.random()*pairs.length)]
-let direction=directions[Math.floor(Math.random()*directions.length)]
+
+let direction=Math.random()>0.5?"BUY 🟢":"SELL 🔴"
+
+let time=times[Math.floor(Math.random()*times.length)]
 
 let win=Math.floor(Math.random()*10)+88
 
 document.getElementById("signal").innerHTML=
 `
 <h3>AI SIGNAL</h3>
-<p>${pair}</p>
-<p>${direction}</p>
-<p>Winrate: ${win}%</p>
+
+<p>Пара: ${pair}</p>
+
+<p>Направление: ${direction}</p>
+
+<p>⏱ Время сделки: ${time}</p>
+
+<p>📈 Вероятность: ${win}%</p>
 `
 
 }
