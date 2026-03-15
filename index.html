@@ -1,8 +1,10 @@
 <!DOCTYPE html>
 <html>
+
 <head>
 
 <meta charset="UTF-8">
+
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
 <style>
@@ -18,16 +20,20 @@ text-align:center;
 padding:20px;
 }
 
+select{
+width:200px;
+padding:10px;
+font-size:16px;
+margin-top:20px;
+}
+
 .button{
 background:#22c55e;
 padding:15px;
 border-radius:10px;
 margin-top:20px;
 font-size:18px;
-}
-
-.lock{
-background:#ef4444;
+cursor:pointer;
 }
 
 .chart{
@@ -54,44 +60,38 @@ justify-content:center;
 📈 Market Chart
 </div>
 
+<h3>Выберите валютную пару</h3>
+
+<select id="pair">
+
+<option>EUR/USD</option>
+<option>GBP/USD</option>
+<option>USD/JPY</option>
+<option>AUD/USD</option>
+<option>USD/CAD</option>
+<option>USD/CHF</option>
+<option>NZD/USD</option>
+<option>EUR/GBP</option>
+<option>BTC/USDT</option>
+<option>ETH/USDT</option>
+
+</select>
+
+<div class="button" onclick="generateSignal()">
+📊 Получить сигнал
+</div>
+
 <div id="signal"></div>
-
-<div id="buttons">
-
-<div class="button lock" onclick="openBroker()">
-🔒 Разблокировать сигналы
-</div>
-
-</div>
 
 </div>
 
 <script>
 
-let unlocked=false
-
-let pairs=["EUR/USD","BTC/USDT","USD/JPY","GBP/USD"]
-
 let times=["30 секунд","1 минута","3 минуты","5 минут"]
-
-function openBroker(){
-
-window.open("ТВОЯ_РЕФЕРАЛЬНАЯ_ССЫЛКА")
-
-document.getElementById("buttons").innerHTML=
-`
-<div class="button" onclick="generateSignal()">
-📊 Получить сигнал
-</div>
-`
-
-unlocked=true
-
-}
 
 function generateSignal(){
 
-let pair=pairs[Math.floor(Math.random()*pairs.length)]
+let pair=document.getElementById("pair").value
 
 let direction=Math.random()>0.5?"BUY 🟢":"SELL 🔴"
 
@@ -100,6 +100,7 @@ let time=times[Math.floor(Math.random()*times.length)]
 let win=Math.floor(Math.random()*10)+88
 
 document.getElementById("signal").innerHTML=
+
 `
 <h3>AI SIGNAL</h3>
 
@@ -117,4 +118,5 @@ document.getElementById("signal").innerHTML=
 </script>
 
 </body>
+
 </html>
