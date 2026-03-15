@@ -461,18 +461,18 @@
               <div class="vote-box">
                 <div class="signal-row">
                   <strong>Аудитория за BUY</strong>
-                  <span id="buyVotesText">50%</span>
+                  <span id="buyVotesText">0% (0)</span>
                 </div>
-                <div class="bar"><span class="buy-bar" id="buyBar" style="width: 50%"></span></div>
+                <div class="bar"><span class="buy-bar" id="buyBar" style="width: 0%"></span></div>
                 <button class="btn btn-green" style="margin-top:12px; width:100%" id="voteBuyBtn">Голосовать BUY</button>
               </div>
 
               <div class="vote-box">
                 <div class="signal-row">
                   <strong>Аудитория за SELL</strong>
-                  <span id="sellVotesText">50%</span>
+                  <span id="sellVotesText">0% (0)</span>
                 </div>
-                <div class="bar"><span class="sell-bar" id="sellBar" style="width: 50%"></span></div>
+                <div class="bar"><span class="sell-bar" id="sellBar" style="width: 0%"></span></div>
                 <button class="btn btn-red" style="margin-top:12px; width:100%" id="voteSellBtn">Голосовать SELL</button>
               </div>
             </div>
@@ -503,8 +503,8 @@
         { id: 4, asset: 'EUR/JPY OTC', direction: 'SELL', confidence: 75, result: 'DRAW', time: '11:32', timeframe: '3m' }
       ],
       nextId: 5,
-      buyVotes: 63,
-      sellVotes: 63,
+      buyVotes: 0,
+      sellVotes: 0,
       timer: null,
       timerValue: 0,
       streamMode: false,
@@ -578,13 +578,13 @@
 
     function updateVoteBars() {
       const total = state.buyVotes + state.sellVotes;
-      const buyPercent = total ? Math.round((state.buyVotes / total) * 100) : 50;
-      const sellPercent = 100 - buyPercent;
+      const buyPercent = total ? Math.round((state.buyVotes / total) * 100) : 0;
+      const sellPercent = total ? Math.round((state.sellVotes / total) * 100) : 0;
 
       el('buyBar').style.width = buyPercent + '%';
       el('sellBar').style.width = sellPercent + '%';
-      el('buyVotesText').textContent = buyPercent + '%';
-      el('sellVotesText').textContent = sellPercent + '%';
+      el('buyVotesText').textContent = `${buyPercent}% (${state.buyVotes})`;
+      el('sellVotesText').textContent = `${sellPercent}% (${state.sellVotes})`;
       el('chatUsersStat').textContent = total;
     }
 
