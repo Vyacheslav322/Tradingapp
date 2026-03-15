@@ -1,147 +1,700 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="ru">
 <head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pocket Option Stream Signals</title>
+  <style>
+    :root {
+      --bg: #07111f;
+      --panel: #0f1a2d;
+      --panel-2: #15243d;
+      --text: #eef4ff;
+      --muted: #95a7c4;
+      --line: rgba(255,255,255,.08);
+      --green: #18c98f;
+      --red: #ff647b;
+      --yellow: #f7c85d;
+      --blue: #4da3ff;
+      --shadow: 0 16px 40px rgba(0,0,0,.28);
+      --radius: 22px;
+    }
 
-<meta charset="UTF-8">
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, Arial, sans-serif;
+      background: radial-gradient(circle at top, #112244 0, var(--bg) 44%);
+      color: var(--text);
+    }
 
-<style>
+    .container {
+      width: min(1240px, calc(100% - 32px));
+      margin: 0 auto;
+    }
 
-body{
-background:#0f172a;
-color:white;
-font-family:Arial;
-text-align:center;
-}
+    .hero { padding: 28px 0 18px; }
 
-.container{
-padding:20px;
-}
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: center;
+      margin-bottom: 22px;
+      flex-wrap: wrap;
+    }
 
-.chart{
-height:200px;
-background:#1e293b;
-border-radius:10px;
-display:flex;
-align-items:center;
-justify-content:center;
-margin-top:20px;
-}
+    .brand { display: flex; flex-direction: column; gap: 8px; }
 
-select{
-width:220px;
-padding:10px;
-font-size:16px;
-margin-top:20px;
-border-radius:6px;
-}
+    .badge {
+      display: inline-flex;
+      width: fit-content;
+      padding: 8px 12px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: var(--blue);
+      background: rgba(77,163,255,.09);
+      font-size: 13px;
+      font-weight: 700;
+    }
 
-.button{
-background:#22c55e;
-padding:15px;
-border-radius:10px;
-margin-top:20px;
-font-size:18px;
-cursor:pointer;
-}
+    h1 {
+      margin: 0;
+      font-size: clamp(30px, 5vw, 52px);
+      line-height: 1.02;
+    }
 
-.loading{
-margin-top:20px;
-font-size:18px;
-color:#facc15;
-animation: blink 1s infinite;
-}
+    .sub {
+      margin: 0;
+      color: var(--muted);
+      max-width: 820px;
+      font-size: 16px;
+      line-height: 1.6;
+    }
 
-@keyframes blink{
-0%{opacity:1}
-50%{opacity:0.3}
-100%{opacity:1}
-}
+    .actions { display: flex; gap: 12px; flex-wrap: wrap; }
 
-</style>
+    .btn {
+      border: 0;
+      cursor: pointer;
+      padding: 14px 18px;
+      border-radius: 14px;
+      font-weight: 700;
+      transition: .2s ease;
+      color: white;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .btn:hover { transform: translateY(-1px); }
+    .btn-primary { background: linear-gradient(135deg, #346cff, #4bc2ff); }
+    .btn-secondary {
+      background: transparent;
+      border: 1px solid var(--line);
+      color: var(--text);
+    }
+    .btn-green { background: linear-gradient(135deg, #0e9a6f, #18c98f); }
+    .btn-red { background: linear-gradient(135deg, #d33f59, #ff647b); }
 
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-top: 20px;
+    }
+
+    .card {
+      background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .stat, .panel { padding: 20px; }
+
+    .label {
+      color: var(--muted);
+      font-size: 13px;
+      margin-bottom: 8px;
+    }
+
+    .value {
+      font-size: 28px;
+      font-weight: 800;
+    }
+
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1.35fr .95fr;
+      gap: 18px;
+      padding-bottom: 28px;
+    }
+
+    .left-col, .right-col {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .panel h2 { margin: 0 0 8px; font-size: 22px; }
+    .muted { color: var(--muted); font-size: 14px; line-height: 1.5; }
+
+    .controls {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    select, .fake-input {
+      width: 100%;
+      background: var(--panel-2);
+      color: var(--text);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 14px;
+      font-size: 15px;
+      outline: none;
+    }
+
+    .signal-box {
+      margin-top: 18px;
+      display: grid;
+      grid-template-columns: 1.2fr .8fr;
+      gap: 16px;
+    }
+
+    .signal-hero {
+      padding: 22px;
+      border-radius: 18px;
+      background: linear-gradient(135deg, rgba(52,108,255,.18), rgba(75,194,255,.07));
+      border: 1px solid rgba(255,255,255,.08);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .signal-hero::after {
+      content: "";
+      position: absolute;
+      width: 240px;
+      height: 240px;
+      background: radial-gradient(circle, rgba(77,163,255,.34), transparent 70%);
+      right: -40px;
+      top: -40px;
+      pointer-events: none;
+    }
+
+    .signal-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 800;
+      border: 1px solid rgba(255,255,255,.08);
+      text-transform: uppercase;
+    }
+    .pill.buy { background: rgba(24,201,143,.14); color: #84f0ca; }
+    .pill.sell { background: rgba(255,100,123,.14); color: #ff9cab; }
+    .pill.wait { background: rgba(247,200,93,.14); color: #ffe59d; }
+
+    .signal-main {
+      font-size: clamp(38px, 4vw, 58px);
+      font-weight: 900;
+      margin: 18px 0 8px;
+      letter-spacing: 1px;
+    }
+
+    .reason-list {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .reason {
+      padding: 14px;
+      background: rgba(255,255,255,.04);
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      font-size: 14px;
+    }
+
+    .mini-grid, .chat-vote {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+
+    .mini-card, .vote-box {
+      padding: 16px;
+      border-radius: 16px;
+      background: rgba(255,255,255,.03);
+      border: 1px solid var(--line);
+    }
+
+    .mini-card .k {
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    .mini-card .v {
+      font-size: 22px;
+      font-weight: 800;
+    }
+
+    .chat-vote { margin-top: 16px; }
+
+    .bar {
+      height: 10px;
+      background: rgba(255,255,255,.06);
+      border-radius: 999px;
+      overflow: hidden;
+      margin-top: 10px;
+    }
+
+    .bar > span {
+      display: block;
+      height: 100%;
+      border-radius: 999px;
+    }
+
+    .buy-bar { background: linear-gradient(90deg, #0e9a6f, #18c98f); }
+    .sell-bar { background: linear-gradient(90deg, #d33f59, #ff647b); }
+
+    .history-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    .history-item {
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      gap: 12px;
+      align-items: center;
+      padding: 14px;
+      border-radius: 14px;
+      background: rgba(255,255,255,.03);
+      border: 1px solid var(--line);
+    }
+
+    .asset { font-weight: 700; }
+    .meta { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+    .tag {
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+    .tag.buy { background: rgba(24,201,143,.14); color: #84f0ca; }
+    .tag.sell { background: rgba(255,100,123,.14); color: #ff9cab; }
+    .tag.win { background: rgba(77,163,255,.14); color: #9ccaff; }
+    .tag.loss { background: rgba(247,200,93,.14); color: #ffe59d; }
+
+    .code-box {
+      background: #09111d;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 16px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 13px;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      line-height: 1.6;
+      color: #dce7ff;
+    }
+
+    .footer-note {
+      padding: 16px 20px 28px;
+      color: var(--muted);
+      font-size: 13px;
+      text-align: center;
+    }
+
+    .stream-mode .container {
+      width: min(1380px, calc(100% - 18px));
+    }
+    .stream-mode h1 { font-size: clamp(34px, 5.4vw, 62px); }
+    .stream-mode .signal-main { font-size: clamp(46px, 5vw, 72px); }
+    .stream-mode .panel, .stream-mode .stat { padding: 24px; }
+    .stream-mode .reason, .stream-mode .mini-card, .stream-mode .vote-box { padding: 18px; }
+
+    @media (max-width: 980px) {
+      .stats, .controls, .main-grid, .signal-box { grid-template-columns: 1fr; }
+      .reason-list, .mini-grid, .chat-vote { grid-template-columns: 1fr; }
+    }
+  </style>
 </head>
-
 <body>
+  <div class="container hero">
+    <div class="topbar">
+      <div class="brand">
+        <span class="badge">Pocket Option • Stream Mode</span>
+        <h1>Сигналы для стримов под Pocket Option</h1>
+        <p class="sub">Интерфейс адаптирован под логику краткосрочных сделок: направление, экспирация, окно входа, сила сигнала и интерактивный перевес аудитории. Это делает показ на стриме понятнее и ближе к тому, как зритель реально открывает сделку в Pocket Option.</p>
+      </div>
+      <div class="actions">
+        <button class="btn btn-primary" id="streamModeBtn">Включить Stream Mode</button>
+        <button class="btn btn-secondary" id="resetVotesBtn">Сбросить голоса</button>
+      </div>
+    </div>
 
-<div class="container">
+    <div class="stats">
+      <div class="card stat"><div class="label">Точность за 7 дней</div><div class="value" id="accuracyStat">71%</div></div>
+      <div class="card stat"><div class="label">Сигналов сегодня</div><div class="value" id="signalsToday">14</div></div>
+      <div class="card stat"><div class="label">Закрыто в плюс / минус</div><div class="value" id="winLossStat">10 / 4</div></div>
+      <div class="card stat"><div class="label">Голосов аудитории</div><div class="value" id="chatUsersStat">126</div></div>
+    </div>
+  </div>
 
-<h2>AI Trading Scanner</h2>
+  <div class="container main-grid">
+    <div class="left-col">
+      <section class="card panel">
+        <h2>Новый сигнал</h2>
+        <p class="muted">Выбери актив, экспирацию и режим риска. Для Pocket Option логичнее показывать не тейк/стоп, а направление, время сделки, окно входа и силу сигнала.</p>
 
-<div class="chart">
-📈 Market Chart
-</div>
+        <div class="controls">
+          <select id="assetSelect">
+            <option value="EUR/USD OTC">EUR/USD OTC</option>
+            <option value="GBP/USD OTC">GBP/USD OTC</option>
+            <option value="USD/JPY OTC">USD/JPY OTC</option>
+            <option value="EUR/JPY OTC">EUR/JPY OTC</option>
+            <option value="AUD/CAD OTC">AUD/CAD OTC</option>
+            <option value="BTC/USD OTC">BTC/USD OTC</option>
+          </select>
 
-<h3>Выберите валютную пару</h3>
+          <select id="timeframeSelect">
+            <option value="30s">30 секунд</option>
+            <option value="1m">1 минута</option>
+            <option value="3m">3 минуты</option>
+            <option value="5m">5 минут</option>
+            <option value="30m">30 минут</option>
+            <option value="1h">1 час</option>
+          </select>
 
-<select id="pair">
+          <select id="riskSelect">
+            <option value="Консервативный">Консервативный</option>
+            <option value="Сбалансированный" selected>Сбалансированный</option>
+            <option value="Агрессивный">Агрессивный</option>
+          </select>
 
-<option>EUR/USD</option>
-<option>GBP/USD</option>
-<option>USD/JPY</option>
-<option>AUD/USD</option>
-<option>USD/CAD</option>
-<option>USD/CHF</option>
-<option>NZD/USD</option>
-<option>EUR/GBP</option>
-<option>BTC/USDT</option>
-<option>ETH/USDT</option>
+          <button class="btn btn-primary" id="generateSignalBtn">Показать сигнал</button>
+        </div>
 
-</select>
+        <div class="signal-box">
+          <div class="signal-hero">
+            <div class="signal-row">
+              <span class="pill wait" id="signalBadge">Ожидание сигнала</span>
+              <span class="pill" id="timerBadge">Экспирация: --:--</span>
+            </div>
+            <div class="signal-main" id="signalDirection">WAIT</div>
+            <div class="muted" id="signalSummary">Нажми «Показать сигнал», чтобы вывести новый сценарий сделки для стрима и аудитории.</div>
 
-<div class="button" onclick="analyze()">
-📊 Получить сигнал
-</div>
+            <div class="reason-list">
+              <div class="reason" id="reason1">Направление сигнала появится здесь</div>
+              <div class="reason" id="reason2">Подтверждение по импульсу появится здесь</div>
+              <div class="reason" id="reason3">Окно входа появится здесь</div>
+              <div class="reason" id="reason4">Режим риска и экспирация появятся здесь</div>
+            </div>
+          </div>
 
-<div id="loading"></div>
-<div id="signal"></div>
+          <div class="card panel">
+            <div class="mini-grid">
+              <div class="mini-card">
+                <div class="k">Сила сигнала</div>
+                <div class="v" id="confidenceValue">--%</div>
+              </div>
+              <div class="mini-card">
+                <div class="k">Риск</div>
+                <div class="v" id="riskValue">--</div>
+              </div>
+              <div class="mini-card">
+                <div class="k">Окно входа</div>
+                <div class="v" id="entryValue">--</div>
+              </div>
+              <div class="mini-card">
+                <div class="k">Экспирация</div>
+                <div class="v" id="expiryValue">--</div>
+              </div>
+            </div>
 
-</div>
+            <div class="chat-vote">
+              <div class="vote-box">
+                <div class="signal-row">
+                  <strong>Аудитория за BUY</strong>
+                  <span id="buyVotesText">50%</span>
+                </div>
+                <div class="bar"><span class="buy-bar" id="buyBar" style="width: 50%"></span></div>
+                <button class="btn btn-green" style="margin-top:12px; width:100%" id="voteBuyBtn">Голосовать BUY</button>
+              </div>
 
-<script>
+              <div class="vote-box">
+                <div class="signal-row">
+                  <strong>Аудитория за SELL</strong>
+                  <span id="sellVotesText">50%</span>
+                </div>
+                <div class="bar"><span class="sell-bar" id="sellBar" style="width: 50%"></span></div>
+                <button class="btn btn-red" style="margin-top:12px; width:100%" id="voteSellBtn">Голосовать SELL</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
 
-let times=["30 секунд","1 минута","3 минуты","5 минут"]
+    <div class="right-col">
+      <section class="card panel">
+        <h2>История сигналов</h2>
+        <p class="muted">Для стримов это критично: зритель должен видеть последние сигналы, их силу, экспирацию и итог закрытия.</p>
+        <div class="history-list" id="historyList"></div>
+      </section>
 
-function analyze(){
+      <section class="card panel">
+        <h2>Как связать с Telegram-ботом</h2>
+        <p class="muted">GitHub Pages не должен хранить токен Telegram. Значит связка делается через отдельный backend.</p>
+        <div class="code-box">Схема:
+1) сайт на GitHub Pages показывает интерфейс
+2) backend хранит последний сигнал и токен Telegram
+3) Telegram-бот принимает команду или сам рассылает сигнал
+4) сайт делает fetch к backend и показывает этот сигнал на стриме</div>
+      </section>
+    </div>
+  </div>
 
-document.getElementById("signal").innerHTML=""
-document.getElementById("loading").innerHTML="🤖 AI анализирует рынок..."
+  <div class="footer-note">
+    Этот интерфейс — демонстрационный и контентный. Он нужен для стримов и вовлечения аудитории. Не является финансовой рекомендацией.
+  </div>
 
-setTimeout(generateSignal,2000)
+  <script>
+    const state = {
+      history: [
+        { asset: 'EUR/USD OTC', direction: 'BUY', confidence: 78, result: 'WIN', time: '12:05', timeframe: '1m' },
+        { asset: 'GBP/USD OTC', direction: 'SELL', confidence: 71, result: 'LOSS', time: '11:58', timeframe: '30s' },
+        { asset: 'BTC/USD OTC', direction: 'BUY', confidence: 83, result: 'WIN', time: '11:46', timeframe: '5m' },
+        { asset: 'EUR/JPY OTC', direction: 'SELL', confidence: 75, result: 'WIN', time: '11:32', timeframe: '3m' }
+      ],
+      buyVotes: 63,
+      sellVotes: 63,
+      timer: null,
+      timerValue: 0,
+      streamMode: false,
+      apiMode: false,
+      apiBase: ''
+    };
 
-}
+    const el = (id) => document.getElementById(id);
+    const timeframeToSeconds = {
+      '30s': 30,
+      '1m': 60,
+      '3m': 180,
+      '5m': 300,
+      '30m': 1800,
+      '1h': 3600
+    };
 
-function generateSignal(){
+    function renderHistory() {
+      const historyList = el('historyList');
+      historyList.innerHTML = '';
 
-document.getElementById("loading").innerHTML=""
+      state.history.forEach(item => {
+        const row = document.createElement('div');
+        row.className = 'history-item';
+        row.innerHTML = `
+          <div>
+            <div class="asset">${item.asset}</div>
+            <div class="meta">${item.time} • ${item.timeframe} • сила ${item.confidence}%</div>
+          </div>
+          <span class="tag ${item.direction.toLowerCase()}">${item.direction}</span>
+          <span class="tag ${item.result.toLowerCase()}">${item.result}</span>
+        `;
+        historyList.appendChild(row);
+      });
+    }
 
-let pair=document.getElementById("pair").value
+    function updateVoteBars() {
+      const total = state.buyVotes + state.sellVotes;
+      const buyPercent = total ? Math.round((state.buyVotes / total) * 100) : 50;
+      const sellPercent = 100 - buyPercent;
 
-let direction=Math.random()>0.5?"BUY 🟢":"SELL 🔴"
+      el('buyBar').style.width = buyPercent + '%';
+      el('sellBar').style.width = sellPercent + '%';
+      el('buyVotesText').textContent = buyPercent + '%';
+      el('sellVotesText').textContent = sellPercent + '%';
+      el('chatUsersStat').textContent = total;
+    }
 
-let time=times[Math.floor(Math.random()*times.length)]
+    function formatTimer(seconds) {
+      const mm = String(Math.floor(seconds / 60)).padStart(2, '0');
+      const ss = String(seconds % 60).padStart(2, '0');
+      return `${mm}:${ss}`;
+    }
 
-let win=Math.floor(Math.random()*(90-65+1))+65
+    function startTimer(seconds) {
+      clearInterval(state.timer);
+      state.timerValue = seconds;
+      el('timerBadge').textContent = 'Экспирация: ' + formatTimer(state.timerValue);
 
-document.getElementById("signal").innerHTML=
+      state.timer = setInterval(() => {
+        state.timerValue--;
+        el('timerBadge').textContent = 'Экспирация: ' + formatTimer(Math.max(state.timerValue, 0));
+        if (state.timerValue <= 0) {
+          clearInterval(state.timer);
+          el('timerBadge').textContent = 'Сделка завершена';
+        }
+      }, 1000);
+    }
 
-`
-<h3>AI SIGNAL</h3>
+    function randomFrom(list) {
+      return list[Math.floor(Math.random() * list.length)];
+    }
 
-<p>Пара: ${pair}</p>
+    function buildEntryWindow(timeframe) {
+      if (timeframe === '30s') return 'вход 5-10 сек';
+      if (timeframe === '1m') return 'вход 10-20 сек';
+      if (timeframe === '3m') return 'вход 15-30 сек';
+      if (timeframe === '5m') return 'вход 20-40 сек';
+      if (timeframe === '30m') return 'вход 1-3 мин';
+      return 'вход 2-5 мин';
+    }
 
-<p>Направление: ${direction}</p>
+    function applySignal(data) {
+      const badge = el('signalBadge');
+      badge.textContent = `${data.direction} • сила ${data.confidence}%`;
+      badge.className = 'pill ' + data.direction.toLowerCase();
 
-<p>⏱ Время сделки: ${time}</p>
+      el('signalDirection').textContent = data.direction;
+      el('signalSummary').textContent = data.summary;
+      el('confidenceValue').textContent = data.confidence + '%';
+      el('riskValue').textContent = data.riskLabel;
+      el('entryValue').textContent = data.entryWindow;
+      el('expiryValue').textContent = data.timeframe;
+      el('reason1').textContent = data.reasons[0];
+      el('reason2').textContent = data.reasons[1];
+      el('reason3').textContent = data.reasons[2];
+      el('reason4').textContent = data.reasons[3];
 
-<p>📈 Вероятность прохода: ${win}%</p>
-`
+      startTimer(timeframeToSeconds[data.timeframe]);
 
-}
+      state.history.unshift({
+        asset: data.asset,
+        direction: data.direction,
+        confidence: data.confidence,
+        result: data.result,
+        time: new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }),
+        timeframe: data.timeframe
+      });
+      state.history = state.history.slice(0, 8);
+      renderHistory();
+      refreshStats();
+    }
 
-</script>
+    function refreshStats() {
+      const wins = state.history.filter(i => i.result === 'WIN').length;
+      const total = state.history.length;
+      const accuracy = Math.round((wins / total) * 100);
+      el('accuracyStat').textContent = accuracy + '%';
+      el('signalsToday').textContent = total;
+      el('winLossStat').textContent = `${wins} / ${total - wins}`;
+    }
 
+    function generateDemoSignal() {
+      const asset = el('assetSelect').value;
+      const timeframe = el('timeframeSelect').value;
+      const riskMode = el('riskSelect').value;
+
+      const direction = Math.random() > 0.5 ? 'BUY' : 'SELL';
+      const confidence = Math.floor(Math.random() * 20) + 66;
+      const riskLabel = confidence >= 80 ? 'Низкий' : confidence >= 72 ? 'Средний' : 'Высокий';
+      const entryWindow = buildEntryWindow(timeframe);
+      const reasons = [
+        `По ${asset} найден ${direction === 'BUY' ? 'восходящий' : 'нисходящий'} импульс`,
+        `Подтверждение по свечной динамике и краткосрочному моментуму`,
+        `Рекомендуемое окно входа: ${entryWindow}`,
+        `Риск: ${riskMode} • экспирация: ${timeframe}`
+      ];
+      const summary = `${asset}: бот показывает ${direction} с силой ${confidence}%. Сценарий подготовлен под формат Pocket Option и удобен для показа на стриме.`;
+      const result = randomFrom(['WIN', 'LOSS']);
+
+      applySignal({ asset, timeframe, direction, confidence, riskLabel, entryWindow, reasons, summary, result });
+    }
+
+    async function fetchLatestSignal() {
+      if (!state.apiMode || !state.apiBase) return;
+      try {
+        const res = await fetch(`${state.apiBase}/api/signal`, { cache: 'no-store' });
+        if (!res.ok) return;
+        const data = await res.json();
+        if (!data || !data.direction || !data.asset || !data.timeframe) return;
+
+        const summary = data.summary || `${data.asset}: получен свежий сигнал из Telegram/backend.`;
+        const reasons = data.reasons || [
+          'Сигнал пришёл из backend',
+          'Обновление выполнено через Telegram-бота',
+          `Окно входа: ${data.entryWindow || buildEntryWindow(data.timeframe)}`,
+          `Экспирация: ${data.timeframe}`
+        ];
+
+        applySignal({
+          asset: data.asset,
+          timeframe: data.timeframe,
+          direction: data.direction,
+          confidence: Number(data.confidence || 75),
+          riskLabel: data.riskLabel || 'Средний',
+          entryWindow: data.entryWindow || buildEntryWindow(data.timeframe),
+          reasons,
+          summary,
+          result: data.result || 'WIN'
+        });
+      } catch (error) {
+        console.error('Не удалось получить сигнал из API', error);
+      }
+    }
+
+    el('generateSignalBtn').addEventListener('click', generateDemoSignal);
+    el('voteBuyBtn').addEventListener('click', () => {
+      state.buyVotes++;
+      updateVoteBars();
+    });
+    el('voteSellBtn').addEventListener('click', () => {
+      state.sellVotes++;
+      updateVoteBars();
+    });
+    el('resetVotesBtn').addEventListener('click', () => {
+      state.buyVotes = 50;
+      state.sellVotes = 50;
+      updateVoteBars();
+    });
+
+    el('streamModeBtn').addEventListener('click', () => {
+      state.streamMode = !state.streamMode;
+      document.body.classList.toggle('stream-mode', state.streamMode);
+      el('streamModeBtn').textContent = state.streamMode ? 'Выключить Stream Mode' : 'Включить Stream Mode';
+    });
+
+    // Если захочешь подключить backend, раскомментируй две строки ниже и впиши свой URL.
+    // state.apiMode = true;
+    // state.apiBase = 'https://your-backend-url';
+    // setInterval(fetchLatestSignal, 10000);
+
+    renderHistory();
+    updateVoteBars();
+    refreshStats();
+  </script>
 </body>
-
 </html>
