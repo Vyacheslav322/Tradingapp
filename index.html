@@ -4,7 +4,6 @@
 <head>
 
 <meta charset="UTF-8">
-
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
 <style>
@@ -20,11 +19,22 @@ text-align:center;
 padding:20px;
 }
 
+.chart{
+height:200px;
+background:#1e293b;
+border-radius:10px;
+display:flex;
+align-items:center;
+justify-content:center;
+margin-top:20px;
+}
+
 select{
-width:200px;
+width:220px;
 padding:10px;
 font-size:16px;
 margin-top:20px;
+border-radius:6px;
 }
 
 .button{
@@ -36,14 +46,17 @@ font-size:18px;
 cursor:pointer;
 }
 
-.chart{
-height:200px;
-background:#1e293b;
+.loading{
 margin-top:20px;
-border-radius:10px;
-display:flex;
-align-items:center;
-justify-content:center;
+font-size:18px;
+color:#facc15;
+animation: blink 1s infinite;
+}
+
+@keyframes blink{
+0%{opacity:1}
+50%{opacity:0.3}
+100%{opacity:1}
 }
 
 </style>
@@ -77,10 +90,11 @@ justify-content:center;
 
 </select>
 
-<div class="button" onclick="generateSignal()">
+<div class="button" onclick="analyze()">
 📊 Получить сигнал
 </div>
 
+<div id="loading"></div>
 <div id="signal"></div>
 
 </div>
@@ -89,7 +103,18 @@ justify-content:center;
 
 let times=["30 секунд","1 минута","3 минуты","5 минут"]
 
+function analyze(){
+
+document.getElementById("signal").innerHTML=""
+document.getElementById("loading").innerHTML="🤖 AI анализирует рынок..."
+
+setTimeout(generateSignal,2000)
+
+}
+
 function generateSignal(){
+
+document.getElementById("loading").innerHTML=""
 
 let pair=document.getElementById("pair").value
 
@@ -97,7 +122,7 @@ let direction=Math.random()>0.5?"BUY 🟢":"SELL 🔴"
 
 let time=times[Math.floor(Math.random()*times.length)]
 
-let win=Math.floor(Math.random()*10)+88
+let win=Math.floor(Math.random()*(90-65+1))+65
 
 document.getElementById("signal").innerHTML=
 
@@ -110,7 +135,7 @@ document.getElementById("signal").innerHTML=
 
 <p>⏱ Время сделки: ${time}</p>
 
-<p>📈 Вероятность: ${win}%</p>
+<p>📈 Вероятность прохода: ${win}%</p>
 `
 
 }
