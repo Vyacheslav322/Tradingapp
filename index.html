@@ -306,6 +306,30 @@
     .tag.sell { background: rgba(255,100,123,.14); color: #ff9cab; }
     .tag.win { background: rgba(77,163,255,.14); color: #9ccaff; }
     .tag.loss { background: rgba(247,200,93,.14); color: #ffe59d; }
+    .tag.pending,
+    .tag.draw { background: rgba(255,255,255,.08); color: var(--text); }
+
+    .history-actions {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .mini-btn {
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.04);
+      color: var(--text);
+      border-radius: 999px;
+      padding: 7px 10px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .mini-btn:hover {
+      background: rgba(255,255,255,.09);
+    }
 
     .code-box {
       background: #09111d;
@@ -338,6 +362,8 @@
     @media (max-width: 980px) {
       .stats, .controls, .main-grid, .signal-box { grid-template-columns: 1fr; }
       .reason-list, .mini-grid, .chat-vote { grid-template-columns: 1fr; }
+      .history-item { grid-template-columns: 1fr; }
+      .history-actions { justify-content: flex-start; }
     }
   </style>
 </head>
@@ -346,12 +372,9 @@
     <div class="topbar">
       <div class="brand">
         <span class="badge">Pocket Option • Stream Mode</span>
-        <h1>Сигналы для стримов под Pocket Option</h1>
-        <p class="sub">Интерфейс адаптирован под логику краткосрочных сделок: направление, экспирация, окно входа, сила сигнала и интерактивный перевес аудитории. Это делает показ на стриме понятнее и ближе к тому, как зритель реально открывает сделку в Pocket Option.</p>
       </div>
       <div class="actions">
         <button class="btn btn-primary" id="streamModeBtn">Включить Stream Mode</button>
-        <button class="btn btn-secondary" id="resetVotesBtn">Сбросить голоса</button>
       </div>
     </div>
 
@@ -367,7 +390,7 @@
     <div class="left-col">
       <section class="card panel">
         <h2>Новый сигнал</h2>
-        <p class="muted">Выбери актив, экспирацию и режим риска. Для Pocket Option логичнее показывать не тейк/стоп, а направление, время сделки, окно входа и силу сигнала.</p>
+        <p class="muted">Выбери актив, экспирацию и режим риска. Ниже появится краткий анализ рынка и причины, почему сайт показывает именно такой сигнал.</p>
 
         <div class="controls">
           <select id="assetSelect">
@@ -404,7 +427,7 @@
               <span class="pill" id="timerBadge">Экспирация: --:--</span>
             </div>
             <div class="signal-main" id="signalDirection">WAIT</div>
-            <div class="muted" id="signalSummary">Нажми «Показать сигнал», чтобы вывести новый сценарий сделки для стрима и аудитории.</div>
+            <div class="muted" id="signalSummary">Нажми «Показать сигнал», чтобы получить новый сценарий сделки с кратким объяснением анализа.</div>
 
             <div class="reason-list">
               <div class="reason" id="reason1">Направление сигнала появится здесь</div>
@@ -461,20 +484,10 @@
     <div class="right-col">
       <section class="card panel">
         <h2>История сигналов</h2>
-        <p class="muted">Для стримов это критично: зритель должен видеть последние сигналы, их силу, экспирацию и итог закрытия.</p>
+        <p class="muted">Итог по каждому сигналу можно отметить вручную: WIN, LOSS или DRAW.</p>
         <div class="history-list" id="historyList"></div>
       </section>
-
-      <section class="card panel">
-        <h2>Как связать с Telegram-ботом</h2>
-        <p class="muted">GitHub Pages не должен хранить токен Telegram. Значит связка делается через отдельный backend.</p>
-        <div class="code-box">Схема:
-1) сайт на GitHub Pages показывает интерфейс
-2) backend хранит последний сигнал и токен Telegram
-3) Telegram-бот принимает команду или сам рассылает сигнал
-4) сайт делает fetch к backend и показывает этот сигнал на стриме</div>
-      </section>
-    </div>
+</div>
   </div>
 
   <div class="footer-note">
@@ -484,11 +497,12 @@
   <script>
     const state = {
       history: [
-        { asset: 'EUR/USD OTC', direction: 'BUY', confidence: 78, result: 'WIN', time: '12:05', timeframe: '1m' },
-        { asset: 'GBP/USD OTC', direction: 'SELL', confidence: 71, result: 'LOSS', time: '11:58', timeframe: '30s' },
-        { asset: 'BTC/USD OTC', direction: 'BUY', confidence: 83, result: 'WIN', time: '11:46', timeframe: '5m' },
-        { asset: 'EUR/JPY OTC', direction: 'SELL', confidence: 75, result: 'WIN', time: '11:32', timeframe: '3m' }
+        { id: 1, asset: 'EUR/USD OTC', direction: 'BUY', confidence: 78, result: 'WIN', time: '12:05', timeframe: '1m' },
+        { id: 2, asset: 'GBP/USD OTC', direction: 'SELL', confidence: 71, result: 'LOSS', time: '11:58', timeframe: '30s' },
+        { id: 3, asset: 'BTC/USD OTC', direction: 'BUY', confidence: 83, result: 'WIN', time: '11:46', timeframe: '5m' },
+        { id: 4, asset: 'EUR/JPY OTC', direction: 'SELL', confidence: 75, result: 'DRAW', time: '11:32', timeframe: '3m' }
       ],
+      nextId: 5,
       buyVotes: 63,
       sellVotes: 63,
       timer: null,
@@ -512,7 +526,7 @@
       const historyList = el('historyList');
       historyList.innerHTML = '';
 
-      state.history.forEach(item => {
+      state.history.forEach((item, index) => {
         const row = document.createElement('div');
         row.className = 'history-item';
         row.innerHTML = `
@@ -520,11 +534,46 @@
             <div class="asset">${item.asset}</div>
             <div class="meta">${item.time} • ${item.timeframe} • сила ${item.confidence}%</div>
           </div>
-          <span class="tag ${item.direction.toLowerCase()}">${item.direction}</span>
-          <span class="tag ${item.result.toLowerCase()}">${item.result}</span>
+          <div>
+            <span class="tag ${item.direction.toLowerCase()}">${item.direction}</span>
+            <span class="tag ${(item.result || 'PENDING').toLowerCase()}">${item.result || 'PENDING'}</span>
+          </div>
+          <div class="history-actions">
+            <button class="mini-btn" data-index="${index}" data-result="WIN">WIN</button>
+            <button class="mini-btn" data-index="${index}" data-result="LOSS">LOSS</button>
+            <button class="mini-btn" data-index="${index}" data-result="DRAW">DRAW</button>
+          </div>
         `;
         historyList.appendChild(row);
       });
+    }
+
+    function setHistoryResult(index, result) {
+      if (!state.history[index]) return;
+      state.history[index].result = result;
+      renderHistory();
+      refreshStats();
+      saveHistory();
+    }
+
+    function saveHistory() {
+      localStorage.setItem('po_history_manual', JSON.stringify(state.history));
+      localStorage.setItem('po_history_next_id', String(state.nextId));
+    }
+
+    function loadHistory() {
+      try {
+        const saved = JSON.parse(localStorage.getItem('po_history_manual') || 'null');
+        const nextId = Number(localStorage.getItem('po_history_next_id') || 0);
+        if (Array.isArray(saved) && saved.length) {
+          state.history = saved;
+        }
+        if (nextId) {
+          state.nextId = nextId;
+        }
+      } catch (e) {
+        console.error('Не удалось загрузить сохранённую историю', e);
+      }
     }
 
     function updateVoteBars() {
@@ -592,25 +641,28 @@
       startTimer(timeframeToSeconds[data.timeframe]);
 
       state.history.unshift({
+        id: state.nextId++,
         asset: data.asset,
         direction: data.direction,
         confidence: data.confidence,
-        result: data.result,
+        result: data.result || 'PENDING',
         time: new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }),
         timeframe: data.timeframe
       });
       state.history = state.history.slice(0, 8);
       renderHistory();
       refreshStats();
+      saveHistory();
     }
 
     function refreshStats() {
-      const wins = state.history.filter(i => i.result === 'WIN').length;
-      const total = state.history.length;
-      const accuracy = Math.round((wins / total) * 100);
+      const completed = state.history.filter(i => i.result === 'WIN' || i.result === 'LOSS' || i.result === 'DRAW');
+      const wins = completed.filter(i => i.result === 'WIN').length;
+      const losses = completed.filter(i => i.result === 'LOSS').length;
+      const accuracy = completed.length ? Math.round((wins / completed.length) * 100) : 0;
       el('accuracyStat').textContent = accuracy + '%';
-      el('signalsToday').textContent = total;
-      el('winLossStat').textContent = `${wins} / ${total - wins}`;
+      el('signalsToday').textContent = state.history.length;
+      el('winLossStat').textContent = `${wins} / ${losses}`;
     }
 
     function generateDemoSignal() {
@@ -629,7 +681,7 @@
         `Риск: ${riskMode} • экспирация: ${timeframe}`
       ];
       const summary = `${asset}: бот показывает ${direction} с силой ${confidence}%. Сценарий подготовлен под формат Pocket Option и удобен для показа на стриме.`;
-      const result = randomFrom(['WIN', 'LOSS']);
+      const result = 'PENDING';
 
       applySignal({ asset, timeframe, direction, confidence, riskLabel, entryWindow, reasons, summary, result });
     }
@@ -659,7 +711,7 @@
           entryWindow: data.entryWindow || buildEntryWindow(data.timeframe),
           reasons,
           summary,
-          result: data.result || 'WIN'
+          result: data.result || 'PENDING'
         });
       } catch (error) {
         console.error('Не удалось получить сигнал из API', error);
@@ -675,11 +727,6 @@
       state.sellVotes++;
       updateVoteBars();
     });
-    el('resetVotesBtn').addEventListener('click', () => {
-      state.buyVotes = 50;
-      state.sellVotes = 50;
-      updateVoteBars();
-    });
 
     el('streamModeBtn').addEventListener('click', () => {
       state.streamMode = !state.streamMode;
@@ -687,11 +734,20 @@
       el('streamModeBtn').textContent = state.streamMode ? 'Выключить Stream Mode' : 'Включить Stream Mode';
     });
 
+    el('historyList').addEventListener('click', (event) => {
+      const button = event.target.closest('[data-result]');
+      if (!button) return;
+      const index = Number(button.dataset.index);
+      const result = button.dataset.result;
+      setHistoryResult(index, result);
+    });
+
     // Если захочешь подключить backend, раскомментируй две строки ниже и впиши свой URL.
     // state.apiMode = true;
     // state.apiBase = 'https://your-backend-url';
     // setInterval(fetchLatestSignal, 10000);
 
+    loadHistory();
     renderHistory();
     updateVoteBars();
     refreshStats();
